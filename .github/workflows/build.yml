@@ -18,19 +18,23 @@ jobs:
         with:
           gradle-version: 8.12
 
-      - name: Extrair o zip
+      - name: Extrair o zip (usa o .zip mais novo da raiz do repositório)
         run: |
+          ZIP="$(ls -t ./*.zip | head -n 1)"
+          echo "Usando: $ZIP"
+          rm -rf work
           mkdir -p work
-          unzip -o ./*.zip -d work
+          unzip -o "$ZIP" -d work
 
       - name: Build
         run: |
           cd "$(dirname "$(find work -name build.gradle | head -n 1)")"
-          gradle build --no-daemon
+          gradle build --no-daemon --stacktrace
 
       - uses: actions/upload-artifact@v4
         with:
           name: imdd-relics
+          if-no-files-found: error
           path: |
             work/**/build/libs/*.jar
             !work/**/build/libs/*-sources.jar
